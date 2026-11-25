@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de entrevistas</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#e9ebf1;--d:#c6cad6;--l:#fff;--ink:#2b2d42;--mute:#8a8fa3;--a1:#8b7bff;--a2:#5846e8;--grad:linear-gradient(135deg,var(--a1),var(--a2))}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Poppins,system-ui,sans-serif;min-height:100vh}
+.raised{background:var(--bg);border-radius:22px;box-shadow:8px 8px 18px var(--d),-8px -8px 18px var(--l)}
+.inset{background:var(--bg);border-radius:14px;box-shadow:inset 4px 4px 9px var(--d),inset -4px -4px 9px var(--l)}
+.app{display:grid;grid-template-columns:250px 1fr;gap:26px;padding:26px;max-width:1500px;margin:auto}
+aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:26px;align-self:start}
+.brand{padding:18px 20px;display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--grad);display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px rgba(88,70,232,.35)}
+.brand b{display:block;font-weight:600}.brand small{color:var(--mute)}
+nav{display:flex;flex-direction:column;gap:14px}
+nav button{all:unset;cursor:pointer;padding:14px 18px;border-radius:18px;background:var(--bg);box-shadow:6px 6px 13px var(--d),-6px -6px 13px var(--l);display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:500;font-size:13px;transition:box-shadow .15s}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--a2);outline-offset:2px}
+nav button em{font-style:normal;font-size:11px;color:var(--mute);min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;box-shadow:inset 2px 2px 4px var(--d),inset -2px -2px 4px var(--l)}
+nav button::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
+nav button span{flex:1}
+nav button em{color:var(--c);font-weight:600}
+nav button:hover{transform:translateY(-1px)}
+nav button[aria-current=true]{background:linear-gradient(135deg,color-mix(in srgb,var(--c) 75%,#fff),var(--c) 60%,color-mix(in srgb,var(--c) 80%,#000));color:#fff;box-shadow:0 10px 20px color-mix(in srgb,var(--c) 45%,transparent)}
+nav button[aria-current=true]::before{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+nav button[aria-current=true] em{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.badge{display:inline-block;padding:3px 11px;border-radius:10px;font-size:12px;font-weight:600;color:#fff}
+.badge{background:linear-gradient(135deg,color-mix(in srgb,var(--b,#8a8fa3) 68%,#fff),var(--b,#8a8fa3));box-shadow:0 3px 8px color-mix(in srgb,var(--b,#8a8fa3) 35%,transparent)}
+.ib{all:unset;box-sizing:border-box;cursor:pointer;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--a2);background:var(--bg);box-shadow:3px 3px 7px var(--d),-3px -3px 7px var(--l)}
+.ib:hover{color:#fff;background:var(--a2)}.ib.del{color:#e0314f}.ib.del:hover{color:#fff;background:#e0314f}
+.ib:active{box-shadow:inset 2px 2px 5px var(--d),inset -2px -2px 5px var(--l)}.ib:focus-visible{outline:2px solid var(--a2);outline-offset:2px}
+.ib svg{width:16px;height:16px}
+td.act,th.act{position:sticky;right:0;background:var(--bg);box-shadow:-6px 0 8px -6px var(--d);white-space:nowrap}
+.ab{display:flex;gap:8px}
+.stat .num{color:var(--a2)}
+.tablecard{border-top:5px solid var(--a2)}
+main{display:flex;flex-direction:column;gap:22px;min-width:0}
+.top{display:grid;grid-template-columns:230px 1fr;gap:22px}
+.stat{padding:20px;text-align:center}
+.stat .num{font-size:40px;font-weight:600;letter-spacing:2px}
+.stat .lbl{color:var(--mute);font-size:12px}
+.chip{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:500;color:var(--a2)}
+.tools{padding:20px;display:flex;flex-direction:column;gap:14px;justify-content:center}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mute);flex:1;min-width:140px}
+input,select,textarea{font:inherit;color:var(--ink);border:0;padding:11px 14px;width:100%}
+textarea{resize:vertical;min-height:84px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;padding:11px 20px;border-radius:14px;background:var(--bg);box-shadow:5px 5px 11px var(--d),-5px -5px 11px var(--l);font-weight:500;font-size:13px;display:inline-flex;gap:8px;align-items:center}
+.btn:active{box-shadow:inset 3px 3px 7px var(--d),inset -3px -3px 7px var(--l)}
+.btn.pri{background:var(--grad);color:#fff;box-shadow:0 8px 18px rgba(88,70,232,.4)}
+.btn.pri:active{box-shadow:inset 2px 2px 8px rgba(0,0,0,.25)}
+.tablecard{padding:14px}
+.wrap{border-radius:16px;overflow-x:auto;overflow-y:hidden;padding-bottom:6px;scrollbar-color:var(--a2) transparent}
+.bar{display:flex;align-items:center;gap:14px}
+.bar b{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.bar b::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 22%,transparent)}
+.app{transition:grid-template-columns .25s}
+.app.closed{grid-template-columns:1fr}.app.closed aside{display:none}
+table{border-collapse:collapse;width:100%}
+th{background:var(--bg);text-align:left;font-size:11.5px;font-weight:600;color:var(--a2);padding:10px 8px;border-bottom:2px solid var(--d);white-space:normal;overflow-wrap:normal;hyphens:none;vertical-align:bottom}
+td{padding:10px 8px;border-bottom:1px solid #d9dce6;vertical-align:top;white-space:normal;overflow-wrap:break-word;word-break:normal;hyphens:none;font-size:12.5px;line-height:1.5}
+td.long{max-width:380px}td.nw{white-space:nowrap}.badge{white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.45)}
+.empty{padding:50px 20px;text-align:center;color:var(--mute)}
+dialog{border:0;padding:0;background:transparent;max-width:min(720px,94vw);width:100%;color:var(--ink)}
+dialog::backdrop{background:rgba(60,64,90,.35);backdrop-filter:blur(3px)}
+.modal{padding:26px}
+.modal h2{margin:0 0 18px;font-size:18px;font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid .full{grid-column:1/-1}
+.acts{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 22px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;font-weight:500;z-index:9}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.hint{font-size:12px;color:var(--mute);margin:0 0 12px}
+@media(max-width:900px){.app{grid-template-columns:1fr;padding:14px}aside{position:static}.top{grid-template-columns:1fr}.grid{grid-template-columns:1fr}
+ table,tbody,tr,td{display:block;width:100%}td.long{max-width:none}td.act{position:static;box-shadow:none;background:none}thead,colgroup{display:none}
+ tr{padding:10px 6px;border-bottom:3px solid var(--d)}
+ td{border:0;padding:5px 10px}td::before{content:attr(data-label);display:block;font-size:11px;font-weight:600;color:var(--a2)}td:empty{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand raised"><div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div><div><b>Entrevistas</b><small>Registro escolar</small></div></div>
+    <nav id="nav" aria-label="Secciones"></nav>
+  </aside>
+  <main>
+    <div class="bar"><button class="btn" id="menuBtn" aria-controls="nav" aria-expanded="true">☰ Menú</button><b id="barTitle"></b></div>
+    <div class="top">
+      <div class="stat raised"><div class="lbl" id="secName"></div><div class="num" id="count">0</div><div class="lbl">registros</div><span class="chip inset" id="status">Sin Drive</span></div>
+      <div class="tools raised">
+        <div class="row">
+          <label class="f" style="flex:2">Buscar<input class="inset" id="q" type="search" placeholder="Alumno, padre, motivo…"></label>
+          <label class="f">Desde<input class="inset" id="d1" type="date"></label>
+          <label class="f">Hasta<input class="inset" id="d2" type="date"></label>
+          <button class="btn" id="clr">Limpiar</button>
+        </div>
+        <div class="row">
+          <button class="btn pri" id="add">＋ Agregar registro</button>
+          <button class="btn" id="imp">Importar Excel</button>
+          <button class="btn" id="exp">Exportar XLSX</button>
+          <button class="btn" id="syn">Sincronizar</button>
+          <button class="btn" id="cfg" title="Conexión con Drive">⚙ Drive</button>
+          <input type="file" id="file" accept=".xlsx,.xls" hidden>
+        </div>
+      </div>
+    </div>
+    <div class="tablecard raised"><div class="wrap" id="tbl"></div></div>
+  </main>
+</div>
+
+<dialog id="dlgForm"><form method="dialog" class="modal raised" id="form"><h2 id="fTitle"></h2><div class="grid" id="fields"></div>
+  <div class="acts"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" value="ok">Guardar registro</button></div></form></dialog>
+
+<dialog id="dlgCfg"><form method="dialog" class="modal raised"><h2>Conexión con Drive</h2>
+  <p class="hint">Pega la URL de la aplicación web de Google Apps Script (termina en /exec). Los registros se escribirán en la hoja de cálculo compartida.</p>
+  <label class="f" style="margin-bottom:12px">URL de la aplicación web<input class="inset" id="url" type="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+  <label class="f">Clave (opcional)<input class="inset" id="key" type="text" autocomplete="off" placeholder="La misma que pusiste en Code.gs"></label>
+  <div class="acts"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" value="ok">Guardar y sincronizar</button></div></form></dialog>
+<dialog id="dlgDel"><form method="dialog" class="modal raised"><h2>Eliminar registro</h2><p class="hint" id="delTxt" style="font-size:14px"></p>
+  <div class="acts"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" value="ok" style="background:linear-gradient(135deg,#ff7a93,#e0314f);box-shadow:0 8px 18px rgba(224,49,79,.4)">Eliminar</button></div></form></dialog>
+<div id="toast" class="raised" role="status"></div>
+
+<script>
+// Pega aquí la URL de tu Apps Script (opcional; también se puede poner desde ⚙ Drive)
+const DEFAULT_URL = 'https://script.google.com/a/macros/colegiopedregalgdl.com/s/AKfycby_8vEicM4cOwvcIpCjLH3jB_RdMMo-lYgqPMrKWPABz5epfKdxyHx-b973eu5y8iO7_w/exec';
+// Clave opcional (la misma que pongas en Code.gs). Déjala vacía si no usas clave.
+const DEFAULT_KEY = '';
+
+const SECS = [
+ ['Atención a padres','ATENCIÓN A PADRES',['FECHA','Hora','Tipo','NOMBRE DEL ALUMNO','GRADO/GRUPO','SECCIÓN','PADRE O MADRE DE FAMILIA','TELEFONO','PROBLEMÁTICA/SITUACIÓN','CANALIZACION PARA ATENCIÓN','SOLUCIÓN','ACUERDOS','SOLICITUD DE CITA']],
+ ['Preescolar','ENTREVISTAS PREESCOLAR',['FECHA DE ENTREVISTA','NOMBRE DEL ALUMNO','GRADO/GRUPO','MADRE O PADRE DE FAMILIA','MOTIVO DE LA ENTREVISTA','ACUERDOS TRATADOS','Llamada para Seguimiento','Atención a Dudas','DIRECCIÓN / COORDINADOR','REQUEREN NUEVA CITA CON DIRECCIÓN']],
+ ['Primaria','ENTREVISTAS PRIMARIA',['HORA Y FECHA DE ENTREVISTA','NOMBRE DEL ALUMNO','GRADO/GRUPO','MADRE O PADRE DE FAMILIA','MOTIVO DE LA ENTREVISTA','ACUERDOS TRATADOS','Llamada para Seguimiento','Atención a Dudas','REQUEREN NUEVA CITA CON DIRECCIÓN','DOCENTE / COORDINADOR']],
+ ['Secundaria','ENTREVISTAS SECUNDARIA',null],
+ ['Preparatoria','ENTREVISTAS PREPARATORIA',null],
+ ['Dirección general','DIRECCIÓN GENERAL',null],
+ ['Dirección psicología','DIRECCION PSICOLOGIA',null]
+];
+const STD=['FECHA DE ENTREVISTA','NOMBRE DEL ALUMNO','GRADO/GRUPO','MADRE O PADRE DE FAMILIA','MOTIVO DE LA ENTREVISTA','ACUERDOS TRATADOS','Llamada para Seguimiento','Atención a Dudas','REQUEREN NUEVA CITA CON DIRECCIÓN'];
+SECS.forEach(s=>{if(!s[2])s[2]=STD});
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+let cur=0, data={}, URL_=localStorage.getItem('ent_url')||DEFAULT_URL, KEY_=localStorage.getItem('ent_key')||DEFAULT_KEY;
+try{data=JSON.parse(localStorage.getItem('ent_data')||'{}')}catch(e){}
+SECS.forEach(s=>data[s[1]]=data[s[1]]||[]);
+data['ATENCIÓN A PADRES'].forEach(r=>{if(r.v.length===11){r.v=[r.v[0],'','',...r.v.slice(1)];r.s=0}});
+const save=()=>localStorage.setItem('ent_data',JSON.stringify(data));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const OPTS={tipo:['Presencial','Llamada'],sec:['Preescolar','Primaria','Secundaria','Preparatoria'],yn:['Sí','No']};
+const BADGE={presencial:'#0f9d6b',llamada:'#1c6fd6',preescolar:'#f5a623',primaria:'#1fb57a',secundaria:'#1c9de6',preparatoria:'#ef476f'};
+const COL=['#5b4be0','#f5a623','#1fb57a','#1c9de6','#ef476f','#3d4f7c','#b44fd9'];
+const kind=h=>/^hora$/i.test(h.trim())?'time':/^tipo$/i.test(h.trim())?'tipo':/^secci[oó]n$/i.test(h.trim())?'sec':/HORA Y FECHA/i.test(h)?'dt':/FECHA/i.test(h)?'date':/PROBLEM|MOTIVO|ACUERDOS|SOLUCI/i.test(h)?'long':/REQUEREN/i.test(h)?'yn':/TELEFONO/i.test(h)?'tel':'text';
+function fmt(v,h){
+  const m=/^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d:\d\d))?/.exec(v||'');
+  return m&&/FECHA/i.test(h)?`${m[3]}/${m[2]}/${m[1]}${m[4]?' '+m[4]:''}`:(v||'');
+}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2800)}
+
+function nav(){
+  $('nav').innerHTML=SECS.map((s,i)=>`<button data-i="${i}" style="--c:${COL[i]}" aria-current="${i===cur}"><span>${esc(s[0])}</span><em>${data[s[1]].length}</em></button>`).join('');
+}
+function render(){
+  const [name,sheet,hs]=SECS[cur], q=norm($('q').value), d1=$('d1').value, d2=$('d2').value;
+  const rows=data[sheet].filter(r=>{
+    if(q&&!norm(r.v.join(' ')).includes(q))return false;
+    const d=(r.v[0]||'').slice(0,10);
+    if(d1&&(!d||d<d1))return false;
+    if(d2&&(!d||d>d2))return false;
+    return true;
+  }).reverse();
+  const R=document.documentElement.style;R.setProperty('--a2',COL[cur]);R.setProperty('--a1',`color-mix(in srgb,${COL[cur]} 65%,#fff)`);
+  $('secName').textContent=name;$('count').textContent=String(rows.length).padStart(2,'0');
+  nav();
+  const MW={long:240,tipo:110,time:75,date:110,dt:150,tel:115,sec:120,yn:95,text:150};
+  $('barTitle').textContent=name;
+  $('tbl').innerHTML=rows.length?`<table><thead><tr>${hs.map(h=>`<th style="min-width:${MW[kind(h)]}px">${esc(h.trim())}</th>`).join('')}<th class="act" style="min-width:104px">Acciones</th></tr></thead><tbody>${rows.map(r=>`<tr>${hs.map((h,i)=>`<td class="${kind(h)==='long'?'long':/^(date|dt|time|tel|tipo)$/.test(kind(h))?'nw':''}" data-label="${esc(h.trim())}">${/^(tipo|sec)$/.test(kind(h))&&r.v[i]?`<span class="badge" style="--b:${BADGE[norm(r.v[i])]||'#8a8fa3'}">${esc(r.v[i])}</span>`:esc(fmt(r.v[i],h))}</td>`).join('')}<td class="act" data-label="Acciones"><div class="ab"><button class="ib" data-act="edit" data-id="${r.id}" title="Editar" aria-label="Editar registro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button class="ib del" data-act="del" data-id="${r.id}" title="Eliminar" aria-label="Eliminar registro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></td></tr>`).join('')}</tbody></table>`
+    :`<div class="empty">${data[sheet].length?'Ningún registro coincide con la búsqueda.':'Aún no hay registros. Usa “Agregar registro” para crear el primero.'}</div>`;
+  status();
+}
+function status(){
+  const p=Object.values(data).flat().filter(r=>r.s!==1).length+dels().length, e=$('status');
+  e.textContent=!URL_?'Sin Drive':p?`${p} pendiente${p>1?'s':''}`:'Sincronizado';
+}
+
+// ---- Alta y edición de registros
+let editId=null, delId=null;
+const dels=()=>{try{return JSON.parse(localStorage.getItem('ent_del')||'[]')}catch(e){return []}};
+const setDels=a=>localStorage.setItem('ent_del',JSON.stringify(a));
+const find=id=>data[SECS[cur][1]].find(r=>r.id===id);
+function openForm(rec){
+  const [name,,hs]=SECS[cur];
+  editId=rec?rec.id:null;
+  $('fTitle').textContent=(rec?'Editar registro · ':'Nuevo registro · ')+name;
+  $('fields').innerHTML=hs.map((h,i)=>{
+    const k=kind(h),n=`f${i}`,l=esc(h.trim()),cv=rec?rec.v[i]||'':'';
+    let c;
+    if(k==='long')c=`<textarea class="inset" name="${n}">${esc(cv)}</textarea>`;
+    else if(OPTS[k]){const o=OPTS[k].slice();if(cv&&!o.includes(cv))o.push(cv);
+      c=`<select class="inset" name="${n}"><option value="">Seleccionar…</option>${o.map(x=>`<option${x===cv?' selected':''}>${esc(x)}</option>`).join('')}</select>`}
+    else{
+      const now=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString();
+      const val=rec?cv:k==='time'?now.slice(11,16):(i===0&&k!=='text')?now.slice(0,k==='dt'?16:10):'';
+      c=`<input class="inset" name="${n}" type="${k==='dt'?'datetime-local':k==='date'?'date':k==='time'?'time':k==='tel'?'tel':'text'}" value="${esc(val)}">`;
+    }
+    return `<label class="f ${k==='long'?'full':''}">${l}${c}</label>`;
+  }).join('');
+  $('dlgForm').showModal();
+}
+$('form').addEventListener('submit',e=>{
+  if(e.submitter?.value!=='ok')return;
+  const [,sheet,hs]=SECS[cur], fd=new FormData($('form'));
+  const v=hs.map((_,i)=>String(fd.get('f'+i)||'').trim());
+  if(!v.some((x,i)=>x&&i>0)){e.preventDefault();toast('Llena al menos un campo además de la fecha');return}
+  if(editId){const r=find(editId);if(r){r.v=v;if(r.s===1)r.s=2}toast('Registro actualizado')}
+  else{data[sheet].push({id:uid(),v,s:0});toast('Registro guardado')}
+  save();render();sync(true);
+});
+$('tbl').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]');if(!b)return;
+  const r=find(b.dataset.id);if(!r)return;
+  if(b.dataset.act==='edit')openForm(r);
+  else{delId=r.id;const hs=SECS[cur][2],ix=hs.findIndex(h=>/NOMBRE DEL ALUMNO/i.test(h));
+    $('delTxt').textContent=`¿Seguro que quieres eliminar el registro${ix>=0&&r.v[ix]?' de '+r.v[ix]:''}? Esta acción también lo borrará de la hoja de Drive.`;
+    $('dlgDel').showModal()}
+});
+$('dlgDel').querySelector('form').addEventListener('submit',e=>{
+  if(e.submitter?.value!=='ok')return;
+  const sheet=SECS[cur][1],r=data[sheet].find(x=>x.id===delId);if(!r)return;
+  data[sheet]=data[sheet].filter(x=>x.id!==delId);
+  if(r.s!==0)setDels(dels().concat([{sheet,id:delId}]));
+  save();render();toast('Registro eliminado');sync(true);
+});
+
+// ---- Sincronización con Drive (Apps Script -> hoja compartida)
+let busy=false;
+async function sync(quiet){
+  if(!URL_){if(!quiet)toast('Configura la conexión en ⚙ Drive');return}
+  if(busy)return;busy=true;$('status').textContent='Sincronizando…';
+  try{
+    const post=async b=>{const j=await (await fetch(URL_,{method:'POST',body:JSON.stringify({key:KEY_,...b})})).json();if(!j.ok)throw new Error(j.error||'Error');return j};
+    if(localStorage.getItem('ent_setup')!==URL_){
+      await post({action:'setup',sheets:SECS.map(s=>({name:s[1],headers:s[2].map(h=>h.trim())}))});
+      localStorage.setItem('ent_setup',URL_);
+    }
+    for(const [,sheet,hs] of SECS){
+      const H=hs.map(h=>h.trim()), ds=dels().filter(d=>d.sheet===sheet);
+      if(ds.length){await post({action:'delete',sheet,headers:H,ids:ds.map(d=>d.id)});setDels(dels().filter(d=>d.sheet!==sheet))}
+      const up=data[sheet].filter(r=>r.s===2);
+      if(up.length){await post({action:'update',sheet,headers:H,rows:up.map(x=>({id:x.id,v:x.v}))});up.forEach(x=>x.s=1)}
+      const pend=data[sheet].filter(r=>!r.s);
+      if(pend.length){await post({action:'add',sheet,headers:H,rows:pend.map(x=>({id:x.id,v:x.v}))});pend.forEach(x=>x.s=1)}
+    }
+    const j=await (await fetch(URL_+(URL_.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY_)+'&t='+Date.now())).json();
+    if(j.error)throw new Error(j.error);
+    for(const [,sheet,hs] of SECS){
+      if(!j[sheet])continue;
+      const srv=new Map(j[sheet].map(r=>[r.id,r]));
+      data[sheet]=data[sheet].filter(r=>r.s!==1||srv.has(r.id));
+      const loc=new Map(data[sheet].map(r=>[r.id,r]));
+      srv.forEach(r=>{
+        const v=hs.map((_,i)=>String(r.v[i]??'')),l=loc.get(r.id);
+        if(!l)data[sheet].push({id:r.id,v,s:1});else if(l.s===1)l.v=v;
+      });
+    }
+    save();render();if(!quiet)toast('Sincronizado con Drive');
+  }catch(err){status();if(!quiet)toast(err.message==='unauthorized'?'La clave no coincide con la del script':'No se pudo conectar con Drive');console.error(err)}
+  busy=false;
+}
+
+// ---- Exportar / Importar XLSX
+function exportX(){
+  const wb=XLSX.utils.book_new();
+  SECS.forEach(([,sheet,hs])=>{
+    const aoa=[hs.map(h=>h.trim()),...data[sheet].map(r=>r.v.map((x,i)=>fmt(x,hs[i])))];
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols']=hs.map(h=>({wch:kind(h)==='long'?45:22}));
+    XLSX.utils.book_append_sheet(wb,ws,sheet.slice(0,31));
+  });
+  XLSX.writeFile(wb,`Entrevistas_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Archivo XLSX exportado');
+}
+const iso=(d,withTime)=>{const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`+(withTime?`T${p(d.getHours())}:${p(d.getMinutes())}`:'')};
+function cell(x,h){
+  if(x instanceof Date)return iso(x,kind(h)==='dt'||x.getHours()+x.getMinutes()>0);
+  x=String(x??'').trim();
+  const m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}:\d\d))?$/.exec(x);
+  if(m&&/FECHA/i.test(h))return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`+(m[4]?'T'+m[4].padStart(5,'0'):'');
+  return x;
+}
+async function importX(f){
+  const wb=XLSX.read(await f.arrayBuffer(),{cellDates:true});
+  let n=0;
+  wb.SheetNames.forEach(sn=>{
+    let s=SECS.find(s=>norm(s[1])===norm(sn));
+    if(!s&&wb.SheetNames.length===1)s=SECS[cur];
+    if(!s)return;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:''}).slice(1);
+    rows.forEach(r=>{
+      const v=s[2].map((h,i)=>cell(r[i],h));
+      if(v.some(x=>x)){data[s[1]].push({id:uid(),v,s:0});n++}
+    });
+  });
+  save();render();toast(n?`${n} registros importados`:'No se encontraron registros para importar');sync(true);
+}
+
+// ---- Menú plegable
+const app=document.querySelector('.app'),mq=matchMedia('(max-width:900px)');
+function setMenu(open){app.classList.toggle('closed',!open);$('menuBtn').setAttribute('aria-expanded',open);localStorage.setItem('ent_menu',open?'1':'0')}
+$('menuBtn').onclick=()=>setMenu(app.classList.contains('closed'));
+setMenu(mq.matches?false:localStorage.getItem('ent_menu')!=='0');
+
+// ---- Eventos
+$('nav').onclick=e=>{const b=e.target.closest('button');if(b){cur=+b.dataset.i;render();if(mq.matches)setMenu(false)}};
+['q','d1','d2'].forEach(i=>$(i).addEventListener('input',render));
+$('clr').onclick=()=>{$('q').value=$('d1').value=$('d2').value='';render()};
+$('add').onclick=()=>openForm();$('exp').onclick=exportX;$('syn').onclick=()=>sync();
+$('imp').onclick=()=>$('file').click();
+$('file').onchange=e=>{if(e.target.files[0])importX(e.target.files[0]);e.target.value=''};
+$('cfg').onclick=()=>{$('url').value=URL_;$('key').value=KEY_;$('dlgCfg').showModal()};
+$('dlgCfg').querySelector('form').addEventListener('submit',e=>{if(e.submitter?.value==='ok'){URL_=$('url').value.trim();KEY_=$('key').value.trim();localStorage.setItem('ent_url',URL_);localStorage.setItem('ent_key',KEY_);localStorage.removeItem('ent_setup');setTimeout(()=>sync(),50)}});
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+render();sync(true);setInterval(()=>sync(true),60000);
+</script>
+</body>
+</html>
